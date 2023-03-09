@@ -47,9 +47,9 @@ impl Editor {
         Self {
             should_quit: false,
             terminal: Terminal::default().expect("Failed to initialize terminal"),
+            document,
             cursor_position: Position::default(),
             offset: Position::default(),
-            document,
         }
     }
 
@@ -93,26 +93,26 @@ impl Editor {
     fn scroll(&mut self) {
         let Position { x, y } = self.cursor_position;
         let width = self.terminal.size().width as usize;
-        let height = self.document.len();
+        let height = self.terminal.size().height as usize;
         let mut offset = &mut self.offset;
 
         if y < offset.y {
             offset.y = y;
-        } else if y >= offset.y.saturating_sub(height) {
-            offset.y = y.saturating_sub(height).saturating_add(1)
+        } else if y >= offset.y.saturating_add(height) {
+            offset.y = y.saturating_sub(height).saturating_add(1);
         }
 
         if x < offset.x {
             offset.x = x;
         } else if x >= offset.x.saturating_add(width) {
-            offset.x = x.saturating_sub(width).saturating_add(1)
+            offset.x = x.saturating_sub(width).saturating_add(1);
         }
     }
 
     fn move_cursor(&mut self, key: Key) {
+        let terminal_height = self.terminal.size().height as usize;
         let Position { mut y, mut x } = self.cursor_position;
-        let size = self.terminal.size();
-        let height = size.height.saturating_sub(1) as usize;
+        let height = self.document.len();
         let mut width = if let Some(row) = self.document.row(y) {
             row.len()
         } else {
@@ -131,8 +131,20 @@ impl Editor {
                     x = x.saturating_add(1);
                 }
             }
-            Key::PageUp => y = 0,
-            Key::PageDown => y = height,
+            Key::PageUp => {
+                y = if y > terminal_height {
+                    y - terminal_height
+                } else {
+                    0
+                }
+            }
+            Key::PageDown => {
+                y = if y.saturating_add(terminal_height) < height {
+                    y + terminal_height as usize
+                } else {
+                    height
+                }
+            }
             Key::Home => x = 0,
             Key::End => x = width,
             _ => (),
@@ -165,8 +177,8 @@ impl Editor {
         let width = self.terminal.size().width as usize;
         let start = self.offset.x;
         let end = self.offset.x + width;
-        let row = &row.render(start, end);
-        println!("{}\r", row);
+        let row = row.render(start, end);
+        println!("{}\r", row)
     }
 
     fn draw_rows(&self) {
@@ -175,7 +187,7 @@ impl Editor {
             Terminal::clear_current_line();
 
             if let Some(row) = self.document.row(terminal_row as usize + self.offset.y) {
-                self.draw_row(row)
+                self.draw_row(row);
             } else if self.document.is_empty() && terminal_row == height / 3 {
                 self.draw_welcome_message();
             } else {
