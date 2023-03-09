@@ -56,7 +56,14 @@ impl Editor {
 
         match pressed_key {
             Key::Ctrl('q') => self.should_quit = true,
-            Key::Up | Key::Down | Key::Left | Key::Right => self.move_cursor(pressed_key),
+            Key::Up
+            | Key::Down
+            | Key::Left
+            | Key::Right
+            | Key::PageUp
+            | Key::PageDown
+            | Key::End
+            | Key::Home => self.move_cursor(pressed_key),
             _ => (),
         }
 
@@ -81,6 +88,10 @@ impl Editor {
                     x = x.saturating_add(1);
                 }
             }
+            Key::PageUp => y = 0,
+            Key::PageDown => y = height,
+            Key::Home => x = 0,
+            Key::End => x = width,
             _ => (),
         }
 
