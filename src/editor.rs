@@ -22,9 +22,6 @@ impl Editor {
             }
             if self.should_quit {
                 break;
-            } else {
-                self.draw_rows();
-                print!("{}", termion::cursor::Goto(1, 1));
             }
             if let Err(error) = self.process_keypress() {
                 die(&error);
@@ -67,7 +64,7 @@ impl Editor {
     }
 
     fn move_cursor(&mut self, key: Key) {
-        let Position { mut x, mut y } = self.cursor_position;
+        let Position { mut y, mut x } = self.cursor_position;
         let size = self.terminal.size();
         let height = size.height.saturating_sub(1) as usize;
         let width = size.width.saturating_sub(1) as usize;
@@ -75,22 +72,22 @@ impl Editor {
             Key::Up => y = y.saturating_sub(1),
             Key::Down => {
                 if y < height {
-                    y = y.saturating_add(1)
+                    y = y.saturating_add(1);
                 }
             }
             Key::Left => x = x.saturating_sub(1),
             Key::Right => {
                 if x < width {
-                    x = x.saturating_add(1)
+                    x = x.saturating_add(1);
                 }
             }
             _ => (),
         }
 
-        self.cursor_position = Position { x, y };
+        self.cursor_position = Position { x, y }
     }
 
-    pub fn draw_welcome_message(&self) {
+    fn draw_welcome_message(&self) {
         let mut welcome_message = format!("Personal editor -- version {}", VERSION);
         let width = self.terminal.size().width as usize;
         let len = welcome_message.len();
