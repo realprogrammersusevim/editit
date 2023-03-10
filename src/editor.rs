@@ -134,7 +134,7 @@ impl Editor {
             .prompt("Search: ", |editor, key, query| {
                 let mut moved = false;
                 match key {
-                    Key::Right | Key::Down | Key::PageDown => {
+                    Key::Right | Key::Down => {
                         direction = SearchDirection::Forward;
                         editor.move_cursor(Key::Right);
                         moved = true;
@@ -155,7 +155,7 @@ impl Editor {
             })
             .unwrap_or(None);
         {
-            if self.query.is_none() {
+            if query.is_none() {
                 self.cursor_position = old_position;
                 self.scroll();
             }

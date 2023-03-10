@@ -134,7 +134,7 @@ impl Row {
         let substring: String = self.string[..]
             .graphemes(true)
             .skip(start)
-            .take(end = start)
+            .take(end - start)
             .collect();
         let matching_byte_index = if direction == SearchDirection::Forward {
             substring.find(query)

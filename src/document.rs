@@ -113,12 +113,7 @@ impl Document {
         self.dirty
     }
 
-    pub fn find(
-        &self,
-        query: &str,
-        after: &Position,
-        direction: SearchDirection,
-    ) -> Option<Position> {
+    pub fn find(&self, query: &str, at: &Position, direction: SearchDirection) -> Option<Position> {
         if at.y >= self.rows.len() {
             return None;
         }
@@ -137,13 +132,13 @@ impl Document {
         };
 
         for _ in start..end {
-            if let Some(row) = rows.get(position.y) {
+            if let Some(row) = self.rows.get(position.y) {
                 if let Some(x) = row.find(&query, position.x, direction) {
                     position.x = x;
                     return Some(position);
                 }
                 if direction == SearchDirection::Forward {
-                    position.y.saturating_add(1);
+                    position.y = position.y.saturating_add(1);
                     position.x = 0;
                 } else {
                     position.y = position.y.saturating_sub(1);
@@ -153,5 +148,6 @@ impl Document {
                 return None;
             }
         }
+        None
     }
 }
